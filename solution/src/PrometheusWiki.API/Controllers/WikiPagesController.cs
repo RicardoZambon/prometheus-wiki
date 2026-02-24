@@ -106,6 +106,7 @@ public class WikiPagesController : ControllerBase
         {
             Id = page.Id,
             Title = page.Title,
+            Content = page.Versions?.OrderByDescending(v => v.VersionNumber).FirstOrDefault()?.Content,
             ParentId = page.ParentId,
             BaseLanguage = page.BaseLanguage,
             CreatedByUsername = page.CreatedBy?.Username ?? "",

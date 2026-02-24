@@ -21,6 +21,7 @@ public class WikiPageRepository : IWikiPageRepository
             .Include(w => w.UpdatedBy)
             .Include(w => w.Children)
             .Include(w => w.Translations)
+            .Include(w => w.Versions)
             .FirstOrDefaultAsync(w => w.Id == id);
     }
 

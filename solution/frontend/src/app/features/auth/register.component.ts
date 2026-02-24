@@ -8,102 +8,59 @@ import { AuthService } from '../../core/services/auth.service';
   standalone: true,
   imports: [FormsModule, RouterLink],
   template: `
-    <div class="auth-container">
-      <h2>Register</h2>
+    <div class="w-full max-w-md mx-auto">
+      <div class="text-center mb-8">
+        <i class="fa-solid fa-fire text-4xl text-primary-600 dark:text-primary-400"></i>
+        <h2 class="mt-4 text-2xl font-bold text-gray-900 dark:text-white">Create an account</h2>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Join Prometheus Wiki</p>
+      </div>
+
       @if (errorMessage) {
-        <div class="error">{{ errorMessage }}</div>
+        <div class="mb-4 p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300 flex items-center gap-2">
+          <i class="fa-solid fa-circle-exclamation"></i> {{ errorMessage }}
+        </div>
       }
-      <form (ngSubmit)="onSubmit()">
-        <div class="form-group">
-          <label for="username">Username</label>
-          <input
-            id="username"
-            type="text"
-            [(ngModel)]="username"
-            name="username"
-            required
-            autocomplete="username"
-          />
+
+      <form (ngSubmit)="onSubmit()" class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-6 space-y-4">
+        <div>
+          <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
+          <input id="username" type="text" [(ngModel)]="username" name="username" required autocomplete="username"
+                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-colors" />
         </div>
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            [(ngModel)]="email"
-            name="email"
-            required
-            autocomplete="email"
-          />
+        <div>
+          <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+          <input id="email" type="email" [(ngModel)]="email" name="email" required autocomplete="email"
+                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-colors" />
         </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            [(ngModel)]="password"
-            name="password"
-            required
-            autocomplete="new-password"
-          />
+        <div>
+          <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+          <input id="password" type="password" [(ngModel)]="password" name="password" required autocomplete="new-password"
+                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-colors" />
         </div>
-        <div class="form-group">
-          <label for="language">Language Preference</label>
-          <select id="language" [(ngModel)]="languagePreference" name="languagePreference">
+        <div>
+          <label for="language" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Language Preference</label>
+          <select id="language" [(ngModel)]="languagePreference" name="languagePreference"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-colors">
             <option value="en">English</option>
             <option value="pt">Portuguese</option>
             <option value="es">Spanish</option>
           </select>
         </div>
-        <button type="submit" [disabled]="isLoading">
-          {{ isLoading ? 'Registering...' : 'Register' }}
+        <button type="submit" [disabled]="isLoading"
+                class="w-full py-2.5 bg-primary-600 hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2">
+          @if (isLoading) {
+            <i class="fa-solid fa-spinner fa-spin"></i>
+          }
+          {{ isLoading ? 'Creating account...' : 'Register' }}
         </button>
       </form>
-      <p class="auth-link">
-        Already have an account? <a routerLink="/login">Login</a>
+
+      <p class="text-center mt-4 text-sm text-gray-500 dark:text-gray-400">
+        Already have an account?
+        <a routerLink="/login" class="text-primary-600 dark:text-primary-400 font-medium hover:underline">Login</a>
       </p>
     </div>
-  `,
-  styles: [`
-    .auth-container {
-      max-width: 400px;
-      margin: 2rem auto;
-      padding: 2rem;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-    }
-    h2 { text-align: center; margin-bottom: 1.5rem; }
-    .form-group {
-      margin-bottom: 1rem;
-      label { display: block; margin-bottom: 0.25rem; font-weight: 500; }
-      input, select {
-        width: 100%;
-        padding: 0.5rem;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        box-sizing: border-box;
-      }
-    }
-    button {
-      width: 100%;
-      padding: 0.75rem;
-      background: #1976d2;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 1rem;
-      &:disabled { opacity: 0.6; cursor: not-allowed; }
-    }
-    .error {
-      background: #fdecea;
-      color: #b71c1c;
-      padding: 0.75rem;
-      border-radius: 4px;
-      margin-bottom: 1rem;
-    }
-    .auth-link { text-align: center; margin-top: 1rem; }
-  `]
+  `
 })
 export class RegisterComponent {
   username = '';

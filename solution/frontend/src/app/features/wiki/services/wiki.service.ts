@@ -15,8 +15,10 @@ export class WikiService {
   }
 
   getPage(id: number, language?: string): Observable<WikiPage> {
-    const params = language ? { language } : {};
-    return this.http.get<WikiPage>(`${this.apiUrl}/${id}`, { params });
+    if (language) {
+      return this.http.get<WikiPage>(`${this.apiUrl}/${id}`, { params: { language } });
+    }
+    return this.http.get<WikiPage>(`${this.apiUrl}/${id}`);
   }
 
   search(query: string): Observable<WikiPage[]> {
