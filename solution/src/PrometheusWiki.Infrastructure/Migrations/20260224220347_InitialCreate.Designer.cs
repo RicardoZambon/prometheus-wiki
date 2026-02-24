@@ -12,7 +12,7 @@ using PrometheusWiki.Infrastructure.Data;
 namespace PrometheusWiki.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260224211954_InitialCreate")]
+    [Migration("20260224220347_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -156,28 +156,28 @@ namespace PrometheusWiki.Infrastructure.Migrations
                         {
                             Key = "archive_timeout_days",
                             Description = "Days before an unanswered topic is archived",
-                            UpdatedAt = new DateTime(2026, 2, 24, 21, 19, 52, 300, DateTimeKind.Utc).AddTicks(9421),
+                            UpdatedAt = new DateTime(2026, 2, 24, 22, 3, 47, 6, DateTimeKind.Utc).AddTicks(2542),
                             Value = "30"
                         },
                         new
                         {
                             Key = "ai_enabled",
                             Description = "Whether AI features are enabled",
-                            UpdatedAt = new DateTime(2026, 2, 24, 21, 19, 52, 300, DateTimeKind.Utc).AddTicks(9425),
+                            UpdatedAt = new DateTime(2026, 2, 24, 22, 3, 47, 6, DateTimeKind.Utc).AddTicks(2546),
                             Value = "false"
                         },
                         new
                         {
                             Key = "ai_provider",
                             Description = "AI provider to use (Anthropic, OpenAI)",
-                            UpdatedAt = new DateTime(2026, 2, 24, 21, 19, 52, 300, DateTimeKind.Utc).AddTicks(9425),
+                            UpdatedAt = new DateTime(2026, 2, 24, 22, 3, 47, 6, DateTimeKind.Utc).AddTicks(2547),
                             Value = "Anthropic"
                         },
                         new
                         {
                             Key = "ai_trigger_delay_hours",
                             Description = "Hours to wait before AI generates an answer",
-                            UpdatedAt = new DateTime(2026, 2, 24, 21, 19, 52, 300, DateTimeKind.Utc).AddTicks(9426),
+                            UpdatedAt = new DateTime(2026, 2, 24, 22, 3, 47, 6, DateTimeKind.Utc).AddTicks(2548),
                             Value = "24"
                         });
                 });
@@ -429,6 +429,18 @@ namespace PrometheusWiki.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("users", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Email = "admin@prometheus.local",
+                            IsActive = true,
+                            LanguagePreference = "en",
+                            PasswordHash = "$2a$11$BKQbyLBpBZEZG1cWjwRZRusbOeRHCYFkT.r11xs/h6Qu1syI8kU4y",
+                            Username = "admin"
+                        });
                 });
 
             modelBuilder.Entity("PrometheusWiki.Core.Entities.UserRole", b =>
@@ -444,6 +456,23 @@ namespace PrometheusWiki.Infrastructure.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("user_roles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = 1,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            UserId = 1,
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            UserId = 1,
+                            RoleId = 3
+                        });
                 });
 
             modelBuilder.Entity("PrometheusWiki.Core.Entities.WikiPage", b =>

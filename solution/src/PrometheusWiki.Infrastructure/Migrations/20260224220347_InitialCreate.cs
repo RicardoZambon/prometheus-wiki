@@ -422,10 +422,10 @@ namespace PrometheusWiki.Infrastructure.Migrations
                 columns: new[] { "Key", "Description", "UpdatedAt", "Value" },
                 values: new object[,]
                 {
-                    { "ai_enabled", "Whether AI features are enabled", new DateTime(2026, 2, 24, 21, 19, 52, 300, DateTimeKind.Utc).AddTicks(9425), "false" },
-                    { "ai_provider", "AI provider to use (Anthropic, OpenAI)", new DateTime(2026, 2, 24, 21, 19, 52, 300, DateTimeKind.Utc).AddTicks(9425), "Anthropic" },
-                    { "ai_trigger_delay_hours", "Hours to wait before AI generates an answer", new DateTime(2026, 2, 24, 21, 19, 52, 300, DateTimeKind.Utc).AddTicks(9426), "24" },
-                    { "archive_timeout_days", "Days before an unanswered topic is archived", new DateTime(2026, 2, 24, 21, 19, 52, 300, DateTimeKind.Utc).AddTicks(9421), "30" }
+                    { "ai_enabled", "Whether AI features are enabled", new DateTime(2026, 2, 24, 22, 3, 47, 6, DateTimeKind.Utc).AddTicks(2546), "false" },
+                    { "ai_provider", "AI provider to use (Anthropic, OpenAI)", new DateTime(2026, 2, 24, 22, 3, 47, 6, DateTimeKind.Utc).AddTicks(2547), "Anthropic" },
+                    { "ai_trigger_delay_hours", "Hours to wait before AI generates an answer", new DateTime(2026, 2, 24, 22, 3, 47, 6, DateTimeKind.Utc).AddTicks(2548), "24" },
+                    { "archive_timeout_days", "Days before an unanswered topic is archived", new DateTime(2026, 2, 24, 22, 3, 47, 6, DateTimeKind.Utc).AddTicks(2542), "30" }
                 });
 
             migrationBuilder.InsertData(
@@ -436,6 +436,21 @@ namespace PrometheusWiki.Infrastructure.Migrations
                     { 1, "User" },
                     { 2, "WikiEditor" },
                     { 3, "Admin" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "users",
+                columns: new[] { "Id", "CreatedAt", "Email", "IsActive", "LanguagePreference", "LastLoginAt", "PasswordHash", "Username" },
+                values: new object[] { 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "admin@prometheus.local", true, "en", null, "$2a$11$BKQbyLBpBZEZG1cWjwRZRusbOeRHCYFkT.r11xs/h6Qu1syI8kU4y", "admin" });
+
+            migrationBuilder.InsertData(
+                table: "user_roles",
+                columns: new[] { "RoleId", "UserId" },
+                values: new object[,]
+                {
+                    { 1, 1 },
+                    { 2, 1 },
+                    { 3, 1 }
                 });
 
             migrationBuilder.CreateIndex(
