@@ -19,5 +19,12 @@ public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
         builder.HasOne(ur => ur.Role)
             .WithMany(r => r.UserRoles)
             .HasForeignKey(ur => ur.RoleId);
+
+        // Assign all roles to the default admin user
+        builder.HasData(
+            new UserRole { UserId = 1, RoleId = 1 }, // User
+            new UserRole { UserId = 1, RoleId = 2 }, // WikiEditor
+            new UserRole { UserId = 1, RoleId = 3 }  // Admin
+        );
     }
 }

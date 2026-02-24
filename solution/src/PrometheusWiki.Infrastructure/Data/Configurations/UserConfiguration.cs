@@ -22,5 +22,16 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.HasOne(u => u.AiUserContext)
             .WithOne(a => a.User)
             .HasForeignKey<AiUserContext>(a => a.UserId);
+
+        builder.HasData(new User
+        {
+            Id = 1,
+            Username = "admin",
+            Email = "admin@prometheus.local",
+            PasswordHash = "$2a$11$BKQbyLBpBZEZG1cWjwRZRusbOeRHCYFkT.r11xs/h6Qu1syI8kU4y", // Admin@123
+            LanguagePreference = "en",
+            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            IsActive = true
+        });
     }
 }
