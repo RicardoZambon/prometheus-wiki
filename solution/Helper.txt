@@ -1,0 +1,5 @@
+cd src && cd PrometheusWiki.API
+
+dotnet ef migrations add InitialCreate --project "..\PrometheusWiki.Infrastructure\PrometheusWiki.Infrastructure.csproj"
+
+dotnet ef database update --project "..\PrometheusWiki.Infrastructure\PrometheusWiki.Infrastructure.csproj"
