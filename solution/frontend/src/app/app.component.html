@@ -1,0 +1,28 @@
+<nav class="navbar">
+  <div class="nav-brand">
+    <a routerLink="/">Prometheus Wiki</a>
+  </div>
+
+  <div class="nav-links">
+    <a routerLink="/topics" routerLinkActive="active">Q&A</a>
+    <a routerLink="/wiki" routerLinkActive="active">Wiki</a>
+    <div *appHasRole="'Admin'">
+      <a routerLink="/admin/users" routerLinkActive="active">Admin</a>
+    </div>
+  </div>
+
+  <div class="nav-right">
+    <app-search-bar />
+    @if (authService.isAuthenticated()) {
+      <app-notification-bell />
+      <span class="username">{{ authService.username() }}</span>
+      <button (click)="logout()" class="btn-logout">Logout</button>
+    } @else {
+      <a routerLink="/login" class="btn-login">Login</a>
+    }
+  </div>
+</nav>
+
+<main class="content">
+  <router-outlet />
+</main>

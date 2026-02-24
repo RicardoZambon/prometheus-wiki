@@ -416,3 +416,8 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Angular
+solution/frontend/.angular/
+solution/frontend/dist/
+solution/frontend/node_modules/
