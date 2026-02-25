@@ -1,80 +1,129 @@
-# Implementation Plan: Categories, User Management & Markdown Editor Fix
+# Implementation Plan: Advanced WYSIWYG Text Editor
 
-## Current State Analysis
-
-- **Backend**: ASP.NET Core API with EF Core (MySQL), JWT auth, 3 roles: User/WikiEditor/Admin
-- **Frontend**: Angular 19 + Tailwind CSS 4 + EasyMDE + FontAwesome
-- **Categories**: Backend CRUD exists (`CategoriesController`) but no admin UI to create/manage them
-- **User Management**: Admin-only user listing + role toggling exists, but no way to **create** users from admin, and no granular permission for user management
-- **Markdown Editor**: EasyMDE is installed (`easymde` in package.json) but its CSS is **not imported** — the editor renders without styles
+## Goal
+Replace the current EasyMDE markdown editor with a Confluence/Notion-like WYSIWYG editor where users edit formatted content directly (no raw markdown visible), while still saving content as markdown in the database.
 
 ---
 
-## Feature 1: Category Management (Admin)
+## Editor Research Summary
 
-The `CategoriesController` already has POST/PUT endpoints restricted to Admin. We need the frontend admin UI.
+Six editors were evaluated for Angular 19 compatibility, markdown serialization, licensing, and UX quality:
 
-### Backend Changes
-- **Add DELETE endpoint** to `CategoriesController` — admin-only, with check that category has no topics before allowing delete
+| Editor | Angular 19 | Markdown Native | License | Confluence/Notion Feel | Verdict |
+|--------|-----------|----------------|---------|----------------------|---------|
+| **TipTap** | Yes (ngx-tiptap v14) | Yes (@tiptap/markdown) | MIT (free) | Yes (with toolbar/extensions) | Strong candidate |
+| **Milkdown** | Yes (ng-milkdown-crepe) | Yes (core design) | MIT (free) | Yes (Crepe preset) | Top pick |
+| BlockNote | No wrapper | N/A | MPL 2.0 | N/A | Eliminated (React-only) |
+| CKEditor 5 | Yes (official) | Yes (plugin) | GPL or $144+/mo | Yes | Too expensive for commercial |
+| TinyMCE | Yes (official) | Premium only ($) | GPL or $25+/mo | Yes | MD is paywalled |
+| Plate/Slate | Uncertain | No (needs library) | MIT | Must build yourself | Too low-level |
 
-### Frontend Changes
-- **Create `category-list.component.ts`** in `features/admin/components/` — CRUD table with:
-  - List of categories showing name, description, topic count, creation date
-  - Inline "Add Category" form (name + description fields)
-  - Edit button that toggles inline editing
-  - Delete button with confirmation
-- **Add category service methods** to `AdminService`:
-  - `getCategories()`, `createCategory()`, `updateCategory()`, `deleteCategory()`
-- **Add route** in `admin.routes.ts`: `{ path: 'categories', ... canActivate: [authGuard, roleGuard('Admin')] }`
-- **Add sidebar link**: "Categories" under Admin section in `sidebar.component.ts`
+### Recommendation: TipTap (via ngx-tiptap)
 
----
+**Why TipTap over Milkdown:**
+- Largest ecosystem (37k+ GitHub stars, 100+ extensions)
+- `ngx-tiptap` v14 explicitly built for Angular 19+ with standalone components
+- Official `@tiptap/markdown` extension provides clean bidirectional markdown serialization
+- More mature table, image, and code block extensions
+- Better long-term support and documentation
+- Massive community means more examples, plugins, and troubleshooting resources
 
-## Feature 2: User Management (with roles)
-
-### Concept
-- Add a new role: **UserManager** (id: 4)
-- Admins can do everything (create users, assign any role including Admin)
-- UserManagers can create users and assign non-Admin roles
-- The "Users" admin page becomes accessible to both Admin and UserManager roles
-
-### Backend Changes
-
-1. **Add `UserManager` role** to `RoleConfiguration.cs` seed data (id: 4, name: "UserManager")
-2. **New migration** for the added role
-3. **Create `UsersController`** (separate from `AdminController`) or add endpoints to `AdminController`:
-   - `POST /api/admin/users` — create a new user (Admin or UserManager)
-   - Request DTO: `CreateUserRequest` with username, email, password, languagePreference, roleIds
-   - Validation: if caller is UserManager (not Admin), reject if roleIds contains Admin role (id=3)
-4. **Update `AdminController` authorization**:
-   - Change user-related endpoints from `[Authorize(Roles = "Admin")]` to `[Authorize(Roles = "Admin,UserManager")]`
-   - Keep settings endpoints Admin-only
-   - Add role-assignment validation: UserManagers cannot assign/remove the Admin role
-
-### Frontend Changes
-
-1. **Update `admin.routes.ts`**: Change users route guard from `roleGuard('Admin')` to `roleGuard('Admin', 'UserManager')`
-2. **Update `sidebar.component.ts`**: Show Users link for both Admin and UserManager roles
-3. **Update `user-list.component.ts`**:
-   - Add "Create User" button that opens a modal/form
-   - The form has: username, email, password, language preference, role checkboxes
-   - If current user is UserManager (not Admin), hide the "Admin" role checkbox
-   - Add to `allRoles` array the new UserManager role (id: 4)
-   - Restrict role toggle: UserManagers cannot toggle Admin role
-4. **Update `AdminService`**:
-   - Add `createUser()` method
-5. **Update `admin.model.ts`**: Add `CreateUserRequest` interface
+**Key packages:**
+- `@tiptap/core`, `@tiptap/starter-kit` — core editor + essential extensions
+- `@tiptap/markdown` — bidirectional markdown serialization (built on MarkedJS)
+- `@tiptap/extension-table`, `@tiptap/extension-image`, `@tiptap/extension-code-block-lowlight` — additional features
+- `ngx-tiptap` v14 — Angular 19 bindings (standalone directives)
 
 ---
 
-## Feature 3: Fix Markdown Editor
+## Current State: Where Markdown is Used
 
-### Root Cause
-EasyMDE's CSS (`easymde/dist/easymde.min.css`) is **not included** in the build. The `angular.json` styles array only has `src/styles.css`, and `styles.css` does not import the EasyMDE CSS. The dark-mode overrides in `styles.css` exist but the base styles are missing.
+| Component | File | Current Editor | Current Renderer | Purpose |
+|-----------|------|---------------|-----------------|---------|
+| Wiki Editor | `wiki-editor.component.ts` | **EasyMDE** | N/A | Create/edit wiki pages |
+| Wiki Page | `wiki-page.component.ts` | N/A | **marked.parse()** | Display wiki pages |
+| Create Topic | `create-topic-modal.component.ts` | **Plain textarea** | N/A | Create Q&A topics |
+| Topic Detail | `topic-detail.component.ts` | **Plain textarea** (answers) | **marked.parse()** | Display topics + submit answers |
 
-### Fix
-- **Add EasyMDE CSS import** to `styles.css`: `@import "easymde/dist/easymde.min.css";` before the dark mode overrides
-- This is the simplest fix — alternatively it could be added to `angular.json` styles array, but since we already have EasyMDE-related CSS in `styles.css`, keeping it together is cleaner
+All content is stored as markdown strings in the database and rendered to HTML via `marked.parse()` + `DomSanitizer`.
+
+---
+
+## Implementation Plan
+
+### Phase 1: Install Dependencies & Create Shared Editor Component
+
+**1.1 Install TipTap packages**
+```
+npm install @tiptap/core @tiptap/starter-kit @tiptap/markdown @tiptap/pm
+npm install @tiptap/extension-table @tiptap/extension-table-row @tiptap/extension-table-cell @tiptap/extension-table-header
+npm install @tiptap/extension-image @tiptap/extension-placeholder @tiptap/extension-underline
+npm install @tiptap/extension-code-block-lowlight
+npm install ngx-tiptap
+npm install lowlight
+```
+
+**1.2 Create shared `RichEditorComponent`** (`shared/components/rich-editor.component.ts`)
+- Standalone Angular component wrapping TipTap
+- **Inputs**: `content` (markdown string), `placeholder`, `minHeight`, `editable`
+- **Outputs**: `contentChange` (emits markdown string on every change)
+- Supports `[(ngModel)]` via `ControlValueAccessor` for form integration
+- Configures extensions: StarterKit, Markdown, Table, Image, Placeholder, Underline, CodeBlockLowlight
+- Builds a custom toolbar with Tailwind-styled buttons matching the app's dark mode theme
+
+**1.3 Toolbar features:**
+- Text formatting: Bold, Italic, Underline, Strikethrough
+- Headings: H1, H2, H3 dropdown
+- Lists: Bullet list, Ordered list
+- Block elements: Blockquote, Code block, Horizontal rule
+- Inserts: Link, Image (URL input), Table (insert 3x3)
+- Utilities: Undo, Redo
+
+**1.4 Markdown round-trip:**
+- On init: `editor.commands.setContent(markdownString, { contentType: 'markdown' })`
+- On change: `editor.getMarkdown()` → emits to parent
+- Database storage remains unchanged (markdown strings)
+- Existing `marked.parse()` rendering in read-only views remains unchanged
+
+### Phase 2: Replace Wiki Editor
+
+**2.1 Update `wiki-editor.component.ts`:**
+- Remove EasyMDE import and initialization
+- Replace `<textarea #editorTextarea>` with `<app-rich-editor [(ngModel)]="content">`
+- Remove EasyMDE-specific lifecycle code (`ngAfterViewInit`, `ngOnDestroy`)
+- Keep existing save/create logic — just change where content comes from
+
+### Phase 3: Upgrade Topic Creation
+
+**3.1 Update `create-topic-modal.component.ts`:**
+- Replace the plain `<textarea [(ngModel)]="content">` with `<app-rich-editor [(ngModel)]="content" placeholder="Describe your question in detail...">`
+- This gives topic creators a proper WYSIWYG experience instead of raw markdown
+
+### Phase 4: Upgrade Topic Answers
+
+**4.1 Update `topic-detail.component.ts`:**
+- Replace the answer `<textarea [(ngModel)]="newAnswerContent">` with `<app-rich-editor [(ngModel)]="newAnswerContent" placeholder="Write your answer..." [minHeight]="'150px'">`
+- Keep existing `renderMarkdown()` for displaying answers (read-only rendering stays as `marked.parse()`)
+
+### Phase 5: Clean Up
+
+**5.1 Remove EasyMDE:**
+```
+npm uninstall easymde
+```
+
+**5.2 Update `styles.css`:**
+- Remove `@import "easymde/dist/easymde.min.css"`
+- Remove all `.dark .EasyMDEContainer` CSS overrides (lines ~92-122)
+- Keep `.prose` styles (needed for `marked.parse()` read-only rendering)
+- Add TipTap editor styling (toolbar, editor area, dark mode)
+
+**5.3 Remove unused dependency:**
+- `ngx-markdown` is installed but never used — remove it too
+
+**5.4 Keep `marked` package:**
+- Still needed for read-only rendering in `wiki-page.component.ts` and `topic-detail.component.ts`
+- TipTap's `@tiptap/markdown` handles editing; `marked` handles display — no conflict
 
 ---
 
@@ -82,22 +131,25 @@ EasyMDE's CSS (`easymde/dist/easymde.min.css`) is **not included** in the build.
 
 | File | Action | Description |
 |------|--------|-------------|
-| `styles.css` | Edit | Add EasyMDE CSS import |
-| `CategoriesController.cs` | Edit | Add DELETE endpoint |
-| `RoleConfiguration.cs` | Edit | Add UserManager seed |
-| `AdminController.cs` | Edit | Split auth, add create user, role validation |
-| `DTOs/Requests/CreateUserRequest.cs` | New | Create user DTO |
-| `admin.service.ts` | Edit | Add category + user methods |
-| `admin.model.ts` | Edit | Add interfaces |
-| `category-list.component.ts` | New | Category CRUD admin page |
-| `admin.routes.ts` | Edit | Add category route, update user guard |
-| `sidebar.component.ts` | Edit | Add categories link, update user visibility |
-| `user-list.component.ts` | Edit | Add create user modal, UserManager role, restrictions |
-| New EF migration | New | For UserManager role |
+| `package.json` | Edit | Add TipTap packages, remove easymde + ngx-markdown |
+| `rich-editor.component.ts` | **New** | Shared WYSIWYG editor with toolbar + markdown I/O |
+| `wiki-editor.component.ts` | Edit | Replace EasyMDE with RichEditorComponent |
+| `create-topic-modal.component.ts` | Edit | Replace textarea with RichEditorComponent |
+| `topic-detail.component.ts` | Edit | Replace answer textarea with RichEditorComponent |
+| `styles.css` | Edit | Remove EasyMDE CSS, add TipTap editor styles |
 
-## Order of Implementation
-1. Fix markdown editor (quick win)
-2. Category management admin UI
-3. User management enhancements (new role, create user, permissions)
-4. EF Core migration
-5. Commit and push
+## What Stays Unchanged
+
+- **Database schema** — content remains markdown strings
+- **Backend API** — no changes needed
+- **Read-only rendering** — `marked.parse()` + `.prose` CSS stays for wiki pages and topic display
+- **All existing content** — markdown stored in DB renders the same
+
+## Risks & Mitigations
+
+| Risk | Mitigation |
+|------|-----------|
+| TipTap markdown serialization lossy for complex content | Test with existing wiki content; TipTap's `@tiptap/markdown` uses MarkedJS under the hood (same as current renderer) |
+| Dark mode styling | Build toolbar and editor styles with Tailwind's dark: variants to match existing theme |
+| Image handling | Start with URL-based image insertion; file upload can be added later if needed |
+| Table editing complexity | TipTap's table extension is mature; provides add/remove rows/cols, merge cells |

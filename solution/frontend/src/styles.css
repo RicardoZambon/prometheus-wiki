@@ -1,7 +1,5 @@
 @import "tailwindcss";
 @import "@fortawesome/fontawesome-free/css/all.min.css";
-@import "easymde/dist/easymde.min.css";
-
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
@@ -89,33 +87,33 @@ body {
   @apply max-w-full rounded-lg;
 }
 
-/* EasyMDE overrides for dark mode */
-.dark .EasyMDEContainer .CodeMirror {
-  background-color: #1f2937;
-  color: #e5e7eb;
-  border-color: #374151;
+/* TipTap editor content styling */
+.tiptap {
+  outline: none;
 }
 
-.dark .EasyMDEContainer .editor-toolbar {
-  border-color: #374151;
-}
-
-.dark .EasyMDEContainer .editor-toolbar button {
+.tiptap p.is-editor-empty:first-child::before {
   color: #9ca3af;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
 }
 
-.dark .EasyMDEContainer .editor-toolbar button:hover {
-  background-color: #374151;
-}
-
-.dark .EasyMDEContainer .editor-toolbar button.active {
-  background-color: #374151;
-}
-
-.dark .EasyMDEContainer .editor-statusbar {
+.dark .tiptap p.is-editor-empty:first-child::before {
   color: #6b7280;
 }
 
-.dark .EasyMDEContainer .CodeMirror-cursor {
-  border-left-color: #e5e7eb;
+.tiptap table {
+  @apply w-full border-collapse mb-4;
+}
+
+.tiptap th,
+.tiptap td {
+  @apply border border-gray-200 dark:border-gray-700 px-3 py-2 text-left;
+  min-width: 80px;
+}
+
+.tiptap th {
+  @apply bg-gray-50 dark:bg-gray-800 font-semibold;
 }

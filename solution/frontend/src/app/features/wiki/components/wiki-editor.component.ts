@@ -1,14 +1,14 @@
-import { Component, inject, OnInit, AfterViewInit, OnDestroy, ViewChild, ElementRef, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import EasyMDE from 'easymde';
 import { WikiService } from '../services/wiki.service';
 import { WikiPageTreeNode } from '../../../core/models/wiki.model';
+import { RichEditorComponent } from '../../../shared/components/rich-editor.component';
 
 @Component({
   selector: 'app-wiki-editor',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, RichEditorComponent],
   template: `
     <div class="max-w-4xl mx-auto space-y-6">
       <div class="flex items-center justify-between">
@@ -55,7 +55,7 @@ import { WikiPageTreeNode } from '../../../core/models/wiki.model';
 
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Content</label>
-          <textarea #editorTextarea></textarea>
+          <app-rich-editor [(ngModel)]="editorContent" placeholder="Start writing your wiki page..."></app-rich-editor>
         </div>
 
         <div class="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
@@ -73,17 +73,15 @@ import { WikiPageTreeNode } from '../../../core/models/wiki.model';
     </div>
   `
 })
-export class WikiEditorComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('editorTextarea') editorTextarea!: ElementRef;
-
+export class WikiEditorComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private wikiService = inject(WikiService);
-  private editor!: EasyMDE;
 
   title = '';
   parentId: number | null = null;
   baseLanguage = 'en';
+  editorContent = '';
   errorMessage = '';
   saving = signal(false);
   flatPages = signal<{ id: number; title: string; prefix: string }[]>([]);
@@ -107,43 +105,21 @@ export class WikiEditorComponent implements OnInit, AfterViewInit, OnDestroy {
         this.flatPages.set(flat);
       }
     });
-  }
-
-  ngAfterViewInit(): void {
-    this.editor = new EasyMDE({
-      element: this.editorTextarea.nativeElement,
-      spellChecker: false,
-      autosave: { enabled: false, uniqueId: 'wiki-editor' },
-      minHeight: '300px',
-      toolbar: [
-        'bold', 'italic', 'heading', '|',
-        'quote', 'unordered-list', 'ordered-list', '|',
-        'link', 'image', 'table', '|',
-        'preview', 'side-by-side', 'fullscreen', '|',
-        'guide'
-      ]
-    });
 
     if (this.pageId) {
       this.wikiService.getPage(this.pageId).subscribe({
         next: page => {
           this.title = page.title;
           if (page.content) {
-            this.editor.value(page.content);
+            this.editorContent = page.content;
           }
         }
       });
     }
   }
 
-  ngOnDestroy(): void {
-    if (this.editor) {
-      this.editor.toTextArea();
-    }
-  }
-
   save(): void {
-    const content = this.editor.value();
+    const content = this.editorContent;
     if (!content.trim()) {
       this.errorMessage = 'Content is required.';
       return;

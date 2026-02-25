@@ -3,11 +3,12 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TopicService } from '../services/topic.service';
 import { Category, Tag } from '../../../core/models/topic.model';
+import { RichEditorComponent } from '../../../shared/components/rich-editor.component';
 
 @Component({
   selector: 'app-create-topic-modal',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, RichEditorComponent],
   template: `
     <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" (click)="close.emit()">
       <div class="bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-800 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
@@ -61,9 +62,8 @@ import { Category, Tag } from '../../../core/models/topic.model';
           }
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Content (Markdown supported)</label>
-            <textarea [(ngModel)]="content" rows="8" placeholder="Describe your question in detail..."
-                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none font-mono text-sm transition-colors"></textarea>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Content</label>
+            <app-rich-editor [(ngModel)]="content" placeholder="Describe your question in detail..." minHeight="200px"></app-rich-editor>
           </div>
         </div>
 
