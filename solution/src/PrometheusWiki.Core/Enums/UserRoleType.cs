@@ -4,5 +4,6 @@ public enum UserRoleType
 {
     User,
     WikiEditor,
-    Admin
+    Admin,
+    UserManager
 }

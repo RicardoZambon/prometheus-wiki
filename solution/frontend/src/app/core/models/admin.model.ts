@@ -9,6 +9,14 @@ export interface AdminUser {
   lastLoginAt: string | null;
 }
 
+export interface CreateUserRequest {
+  username: string;
+  email: string;
+  password: string;
+  languagePreference: string;
+  roleIds: number[];
+}
+
 export interface AppSetting {
   key: string;
   value: string;

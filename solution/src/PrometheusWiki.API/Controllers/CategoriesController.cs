@@ -48,4 +48,22 @@ public class CategoriesController : ControllerBase
         await _context.SaveChangesAsync();
         return NoContent();
     }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteCategory(int id)
+    {
+        var category = await _context.Categories
+            .Include(c => c.Topics)
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        if (category == null) return NotFound();
+
+        if (category.Topics.Count > 0)
+            return BadRequest(new { message = "Cannot delete a category that has topics assigned to it." });
+
+        _context.Categories.Remove(category);
+        await _context.SaveChangesAsync();
+        return NoContent();
+    }
 }

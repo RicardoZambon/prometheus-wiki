@@ -36,10 +36,11 @@ import { HasRoleDirective } from '../directives/has-role.directive';
           @if (!collapsed) { <span>Pages</span> }
         </a>
 
-        <div *appHasRole="'Admin'">
+        <!-- Users: visible to Admin and UserManager -->
+        <div *appHasRole="['Admin', 'UserManager']">
           @if (!collapsed) {
             <div class="px-3 py-2 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-4">
-              Admin
+              Management
             </div>
           }
           <a routerLink="/admin/users" routerLinkActive="!bg-primary-50 !text-primary-700 dark:!bg-primary-950 dark:!text-primary-300"
@@ -47,6 +48,21 @@ import { HasRoleDirective } from '../directives/has-role.directive';
              [title]="collapsed ? 'Users' : ''">
             <i class="fa-solid fa-users w-5 text-center"></i>
             @if (!collapsed) { <span>Users</span> }
+          </a>
+        </div>
+
+        <!-- Admin-only section: Categories and Settings -->
+        <div *appHasRole="'Admin'">
+          @if (!collapsed) {
+            <div class="px-3 py-2 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mt-4">
+              Admin
+            </div>
+          }
+          <a routerLink="/admin/categories" routerLinkActive="!bg-primary-50 !text-primary-700 dark:!bg-primary-950 dark:!text-primary-300"
+             class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+             [title]="collapsed ? 'Categories' : ''">
+            <i class="fa-solid fa-folder w-5 text-center"></i>
+            @if (!collapsed) { <span>Categories</span> }
           </a>
           <a routerLink="/admin/settings" routerLinkActive="!bg-primary-50 !text-primary-700 dark:!bg-primary-950 dark:!text-primary-300"
              class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"

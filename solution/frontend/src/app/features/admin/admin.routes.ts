@@ -6,6 +6,11 @@ export const adminRoutes: Routes = [
   {
     path: 'users',
     loadComponent: () => import('./components/user-list.component').then(m => m.UserListComponent),
+    canActivate: [authGuard, roleGuard('Admin', 'UserManager')]
+  },
+  {
+    path: 'categories',
+    loadComponent: () => import('./components/category-list.component').then(m => m.CategoryListComponent),
     canActivate: [authGuard, roleGuard('Admin')]
   },
   {
