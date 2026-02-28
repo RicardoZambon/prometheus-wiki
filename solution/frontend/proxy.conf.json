@@ -1,0 +1,19 @@
+{
+  "/api": {
+    "target": "https://localhost:7120/api",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api": ""
+    }
+  },
+  "/hubs": {
+    "target": "https://localhost:7120/hubs",
+    "secure": false,
+    "ws": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api": ""
+    }
+  }
+}
